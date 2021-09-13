@@ -1,67 +1,4 @@
-%WAVE_SIGNIF  Significance testing for the 1D Wavelet transform WAVELET
-%
-%   [SIGNIF,FFT_THEOR] = ...
-%      wave_signif(Y,DT,SCALE,SIGTEST,LAG1,SIGLVL,DOF,MOTHER,PARAM)
-%
-% INPUTS:
-%
-%    Y = the time series, or, the VARIANCE of the time series.
-%        (If this is a single number, it is assumed to be the variance...)
-%    DT = amount of time between each Y value, i.e. the sampling time.
-%    SCALE = the vector of scale indices, from previous call to WAVELET.
-%
-%
-% OUTPUTS:
-%
-%    SIGNIF = significance levels as a function of SCALE
-%    FFT_THEOR = output theoretical red-noise spectrum as fn of PERIOD
-%
-%
-% OPTIONAL INPUTS:
-% *** Note *** setting any of the following to -1 will cause the default
-%               value to be used.
-%
-%    SIGTEST = 0, 1, or 2.    If omitted, then assume 0.
-%
-%         If 0 (the default), then just do a regular chi-square test,
-%             i.e. Eqn (18) from Torrence & Compo.
-%         If 1, then do a "time-average" test, i.e. Eqn (23).
-%             In this case, DOF should be set to NA, the number
-%             of local wavelet spectra that were averaged together.
-%             For the Global Wavelet Spectrum, this would be NA=N,
-%             where N is the number of points in your time series.
-%         If 2, then do a "scale-average" test, i.e. Eqns (25)-(28).
-%             In this case, DOF should be set to a
-%             two-element vector [S1,S2], which gives the scale
-%             range that was averaged together.
-%             e.g. if one scale-averaged scales between 2 and 8,
-%             then DOF=[2,8].
-%
-%    LAG1 = LAG 1 Autocorrelation, used for SIGNIF levels. Default is 0.0
-%
-%    SIGLVL = significance level to use. Default is 0.95
-%
-%    DOF = degrees-of-freedom for signif test.
-%         IF SIGTEST=0, then (automatically) DOF = 2 (or 1 for MOTHER='DOG')
-%         IF SIGTEST=1, then DOF = NA, the number of times averaged together.
-%         IF SIGTEST=2, then DOF = [S1,S2], the range of scales averaged.
-%
-%       Note: IF SIGTEST=1, then DOF can be a vector (same length as SCALEs),
-%            in which case NA is assumed to vary with SCALE.
-%            This allows one to average different numbers of times
-%            together at different scales, or to take into account
-%            things like the Cone of Influence.
-%            See discussion following Eqn (23) in Torrence & Compo.
-%
-%
-%----------------------------------------------------------------------------
-%   Copyright (C) 1995-1998, Christopher Torrence and Gilbert P. Compo
-%   University of Colorado, Program in Atmospheric and Oceanic Sciences.
-%   This software may be used, copied, or redistributed as long as it is not
-%   sold and this copyright notice is reproduced on each copy made.  This
-%   routine is provided as is without any express or implied warranties
-%   whatsoever.
-%----------------------------------------------------------------------------
+
 function [signif,fft_theor] = ...
 	wave_signif(Y,dt,scale1,sigtest,lag1,siglvl,dof,mother,param);
 
@@ -98,7 +35,7 @@ mother = upper(mother);
 if (strcmp(mother,'MORLET'))  %----------------------------------  Morlet
 	if (param == -1), param = 6.;, end
 	k0 = param;
-	fourier_factor = (4*pi)/(k0 + sqrt(2 + k0^2)); % Scale-->Fourier [Sec.3h]
+	fourier_factor = (4*pi)/(k0 + sqrt(2 + k0^2)); % Scale-->Fourier 
 	empir = [2.,-1,-1,-1];
 	if (k0 == 6), empir(2:4)=[0.776,2.32,0.60];, end
 elseif (strcmp(mother,'PAUL'))  %--------------------------------  Paul
@@ -125,20 +62,20 @@ gamma_fac = empir(3);  % time-decorrelation factor
 dj0 = empir(4);        % scale-decorrelation factor
 
 freq = dt ./ period;   % normalized frequency
-fft_theor = (1-lag1^2) ./ (1-2*lag1*cos(freq*2*pi)+lag1^2);  % [Eqn(16)]
+fft_theor = (1-lag1^2) ./ (1-2*lag1*cos(freq*2*pi)+lag1^2);  
 fft_theor = variance*fft_theor;  % include time-series variance
 signif = fft_theor;
 if (dof == -1), dof = dofmin;, end
 
-if (sigtest == 0)    % no smoothing, DOF=dofmin [Sec.4]
+if (sigtest == 0)    % no smoothing, DOF=dofmin 
 	dof = dofmin;
 	chisquare = chisquare_inv(siglvl,dof)/dof;
-	signif = fft_theor*chisquare ;  % [Eqn(18)]
+	signif = fft_theor*chisquare ;  
 elseif (sigtest == 1)  % time-averaged significance
 	if (length(dof) == 1), dof=zeros(1,J1+1)+dof;, end
 	truncate = find(dof < 1);
 	dof(truncate) = ones(size(truncate));
-	dof = dofmin*sqrt(1 + (dof*dt/gamma_fac ./ scale).^2 );   % [Eqn(23)]
+	dof = dofmin*sqrt(1 + (dof*dt/gamma_fac ./ scale).^2 );  
 	truncate = find(dof < dofmin);
 	dof(truncate) = dofmin*ones(size(truncate));   % minimum DOF is dofmin
 	for a1 = 1:J1+1
@@ -160,17 +97,16 @@ elseif (sigtest == 2)  % time-averaged significance
 	if (navg == 0)
 		error(['No valid scales between ',num2str(s1),' and ',num2str(s2)])
 	end
-	Savg = 1./sum(1 ./ scale(avg));       % [Eqn(25)]
+	Savg = 1./sum(1 ./ scale(avg));       
 	Smid = exp((log(s1)+log(s2))/2.);     % power-of-two midpoint
-	dof = (dofmin*navg*Savg/Smid)*sqrt(1 + (navg*dj/dj0)^2);  % [Eqn(28)]
-	fft_theor = Savg*sum(fft_theor(avg) ./ scale(avg));  % [Eqn(27)]
+	dof = (dofmin*navg*Savg/Smid)*sqrt(1 + (navg*dj/dj0)^2);  
+	fft_theor = Savg*sum(fft_theor(avg) ./ scale(avg));  
 	chisquare = chisquare_inv(siglvl,dof)/dof;
-	signif = (dj*dt/Cdelta/Savg)*fft_theor*chisquare;    % [Eqn(26)]
+	signif = (dj*dt/Cdelta/Savg)*fft_theor*chisquare;    
 else
 	error('sigtest must be either 0, 1, or 2')
 end
 
 return
 
-% end of code
 

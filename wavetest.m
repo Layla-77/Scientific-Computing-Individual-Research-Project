@@ -1,20 +1,10 @@
-%WAVETEST Example Matlab script for WAVELET, using NINO3 SST dataset
-%
-% See "http://paos.colorado.edu/research/wavelets/"
-% Written January 1998 by C. Torrence
-%
-% Modified Oct 1999, changed Global Wavelet Spectrum (GWS) to be sideways,
-%   changed all "log" to "log2", changed logarithmic axis on GWS to
-%   a normal axis.
 
 load 'sst_nino3.dat'   % input SST time series
 sst = sst_nino3;
 
 %------------------------------------------------------ Computation
 
-% normalize by standard deviation (not necessary, but makes it easier
-% to compare with plot on Interactive Wavelet page, at
-% "http://paos.colorado.edu/research/wavelets/plot/"
+% normalize by standard deviation
 variance = std(sst)^2;
 sst = (sst - mean(sst))/sqrt(variance) ;
 
@@ -48,7 +38,7 @@ avg = find((scale >= 2) & (scale < 8));
 Cdelta = 0.776;   % this is for the MORLET wavelet
 scale_avg = (scale')*(ones(1,n));  % expand scale --> (J+1)x(N) array
 scale_avg = power ./ scale_avg;   % [Eqn(24)]
-scale_avg = variance*dj*dt/Cdelta*sum(scale_avg(avg,:));   % [Eqn(24)]
+scale_avg = variance*dj*dt/Cdelta*sum(scale_avg(avg,:));  
 scaleavg_signif = wave_signif(variance,dt,scale,2,lag1,-1,[2,7.9],mother);
 
 whos
@@ -78,7 +68,7 @@ set(gca,'YLim',log2([min(period),max(period)]), ...
 	'YDir','reverse', ...
 	'YTick',log2(Yticks(:)), ...
 	'YTickLabel',Yticks)
-% 95% significance contour, levels at -99 (fake) and 1 (95% signif)
+
 hold on
 contour(time,log2(period),sig95,[-99,1],'k');
 hold on
@@ -111,5 +101,4 @@ hold on
 plot(xlim,scaleavg_signif+[0,0],'--')
 hold off
 
-% end of code
 
