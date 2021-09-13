@@ -21,42 +21,6 @@ except ImportError:
     sparse_matrix = tuple()
 
 
-"""Transplant is a Python client for remote code execution
-
-You can call Matlab functions and interact with Matlab objects. Matlab
-functions and objects are wrapped in proxy functions and objects in
-Python, which forward all interactions to Matlab, and get resolved to
-the original functions/objects when transferred back to Matlab.
-
-All basic data types are passed by value, and Matlab matrices are
-converted to Numpy arrays and vice versa.
-
-It can start and connect Matlab servers and send them messages. All
-messages are JSON-encoded strings. All messages are dictionaries with
-at least one key: 'type'.
-
-Depending on the message type, other keys may or may not be set.
-
-There are seven request types sent by Python:
-- 'die': the server closes its 0MQ session and quits.
-- 'set_global': saves the 'value' as a global variable called 'name'.
-- 'get_global': retrieves the value of a global variable 'name'.
-- 'del_proxy': remove cached object 'handle'.
-- 'call': call function 'name' with 'args' and 'nargout'.
-
-There are three response types:
-- 'ack': the server received the message successfully.
-- 'error': there was an error while handling the message.
-- 'value': returns a value.
-
-To enable cross-language functions, objects and matrices, these are
-encoded specially when transmitted between Python and Matlab:
-- Matrices are encoded as {"__matrix__", ... }
-- Functions are encoded as {"__function__", str2func(f) }
-- Objects are encoded as {"__object__", handle }
-
-"""
-
 
 class TransplantError(RuntimeError):
     """An exception that retains some Remote-specific metadata."""
